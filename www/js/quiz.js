@@ -4,7 +4,7 @@
 $(function (){
     console.log("init!");
     //mobile backendのAPIキーを設定
-    NCMB.initialize("YOUR_APIKEY","YOUR_CLIENTKEY");
+    var ncmb = new NCMB("YOUR_APIKEY","YOUR_CLIENTKEY");
     
     //クイズを表示するイベントを登録
     $(document.body).on('pageinit', '#answer_page', function() {refreshQuiz();});
