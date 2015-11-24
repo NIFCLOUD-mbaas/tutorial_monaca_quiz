@@ -22,8 +22,9 @@ function checkCurrentUser(){
         animation: 'lift', // アニメーションの種類
         onTransitionEnd: function() {} // アニメーションが完了した際によばれるコールバック
     };
-    
-    if (NCMB.User.current()){
+
+    var currentUser = ncmb.User.getCurrentUser();
+    if (currentUser) {
         //ログイン済みであればメニューの表示
         quizNavi.pushPage("menu.html", options);
     } else {
