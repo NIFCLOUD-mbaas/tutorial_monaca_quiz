@@ -4,7 +4,6 @@ var ncmb = new NCMB("YOURAPPKEY","YOURCLIENTKEY");
     
 //ページの初期化が完了したら実行される
 $(function (){
-    console.log("init!");
    
     //クイズを表示するイベントを登録
     $(document.body).on('pageinit', '#answer_page', function() {refreshQuiz();});
@@ -78,7 +77,6 @@ function logout(){
 
 //クイズ作成画面に登録ボタンを設置する
 function displayButton(){
-    console.log("display");
     var btn = $("<ons-button id='create_quiz_button' onclick='createQuiz()'>クイズを登録!</ons-button>");
     btn.appendTo($("#create_button_area"));
     ons.compile(btn[0]);
@@ -151,10 +149,6 @@ function answerQuiz(selectedOptions){
     } else {
         //間違い時に×を出す
         $("#question").append("<br/><img src='images/batsu.png'><br/>");
-        
-        //間違い時に端末を振動させる
-        //navigator.notification.vibrate(1000);
-        
         //ログイン中の会員に連続正解数を設定
         var user = ncmb.User.getCurrentUser();
         user.set("score", score);
@@ -215,7 +209,7 @@ function selectQuiz(){
     QuizClass.count().fetchAll(function(error, objects) {
                              if(error) {
                                 // エラー
-                                alert("error:" + error.message); 
+                                console.log("error:" + error.message); 
                              } else {
                                 //登録されたクイズの数を保持する
                                 quizSize = objects.count;                     
