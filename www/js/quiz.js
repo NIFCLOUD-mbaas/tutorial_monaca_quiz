@@ -25,13 +25,18 @@ function checkCurrentUser(){
         onTransitionEnd: function() {} // アニメーションが完了した際によばれるコールバック
     };
 
-    var currentUser = ncmb.User.getCurrentUser();
-    if (currentUser) {
-        //ログイン済みであればメニューの表示
-        quizNavi.pushPage("menu.html", options);
-    } else {
-        //未ログインの場合はログイン画面を表示
-        quizNavi.pushPage("login.html", options)
+    try {
+        var currentUser = ncmb.User.getCurrentUser();
+        if (currentUser) {
+            //ログイン済みであればメニューの表示
+            quizNavi.pushPage("menu.html", options);
+        } else {
+            //未ログインの場合はログイン画面を表示
+            quizNavi.pushPage("login.html", options)
+        }        
+    }
+    catch (error) {
+        console.log("error:" + error);
     }
 }
 
@@ -71,8 +76,16 @@ function userLogin(signUpFlag){
 
 //ログアウトを実行し、ホーム画面に遷移させる
 function logout(){
-    ncmb.User.logout();
-    quizNavi.resetToPage("home.html");
+    ncmb.User.logout()
+             .then(function(){
+                 // ログアウト後処理
+                 quizNavi.resetToPage("home.html");
+             })
+             .catch(function(err){
+                // エラー処理
+                console.log("error:" + err.message);
+             });
+    
 }
 
 //クイズ作成画面に登録ボタンを設置する
