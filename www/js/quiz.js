@@ -167,15 +167,14 @@ function answerQuiz(selectedOptions){
         var user = ncmb.User.getCurrentUser();
         user.set("score", score);
         score = 0;
-        user.update({
-            success: function (){
+        user.update(function(error, obj) {
+            if(error) {
+                console.log("error:" + error.message);
+            }else {
                 //スコアの更新が完了したら、メニュー画面に遷移するボタンを表示させる
                 var btn = $("<ons-button onclick='quizNavi.resetToPage(\"menu.html\")'>メニューに戻る</ons-button>");
                 btn.appendTo($("#question"));
                 ons.compile(btn[0]);
-            },
-            error: function (obj, error){
-                console.log("error:" + error.message);
             }
         });
     }
