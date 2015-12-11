@@ -117,7 +117,7 @@ function createQuiz(){
         quiz.set("quizText", quizText)
             .set("answer", answer)
             .set("options", [option1, option2, option3]);
-        
+     
         //mobile bakcendにクイズを登録する
         quiz.save(function(error, object) {
             if(error) {
@@ -131,7 +131,6 @@ function createQuiz(){
                 ons.compile(btn[0]);                
             }
         });
-        
     }
 }
 
