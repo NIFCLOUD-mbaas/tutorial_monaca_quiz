@@ -39,11 +39,10 @@ function checkCurrentUser(){
         console.log("error:" + error);
         logout();
     }
-
 }
 
 //会員登録・ログインを行う
-function userLogin(isSignUp){
+function userLogin(isSignedUp){
     //入力フォームからユーザー名とパスワードを取得
     var userName = $("#user_name").val();
     var password = $("#password").val();
@@ -59,7 +58,7 @@ function userLogin(isSignUp){
         }
     }
 
-    if (isSignUp === false){
+    if (isSignedUp === false){
         //ログイン処理を実行し、上で設定されたコールバックが実行される
         ncmb.User.login(userName, password, callBack);
     } else {
