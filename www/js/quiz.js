@@ -62,7 +62,7 @@ function userLogin(isSignedUp){
         //ログイン処理を実行し、上で設定されたコールバックが実行される
         ncmb.User.login(userName, password, callBack);
     } else {
-        //会員のインスタンスを作成NCMB
+        //会員のインスタンスを作成
         var user = new ncmb.User();
         
         //ユーザー名とパスワードとスコアをインスタンスに設定
