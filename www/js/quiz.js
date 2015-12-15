@@ -86,7 +86,6 @@ function logout(){
                 // エラー処理
                 console.log("error:" + err.message);
              });
-    
 }
 
 //クイズ作成画面に登録ボタンを設置する
