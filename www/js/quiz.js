@@ -37,6 +37,7 @@ function checkCurrentUser(){
     }
     catch (error) {
         console.log("error:" + error);
+        logout();
     }
 
 }
