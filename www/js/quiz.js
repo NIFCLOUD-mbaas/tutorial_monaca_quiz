@@ -113,24 +113,22 @@ function createQuiz(){
         var QuizClass = ncmb.DataStore("Quiz");
         var quiz = new QuizClass();
         
-        //取得したクイズの内容をセットする
+        //取得したクイズの内容をセットし、mobile backendにクイズを登録する
         quiz.set("quizText", quizText)
             .set("answer", answer)
-            .set("options", [option1, option2, option3]);
-     
-        //mobile bakcendにクイズを登録する
-        quiz.save(function(error, object) {
-            if(error) {
-                $("#created_message").text("error:" + error.message);
-            }else{
+            .set("options", [option1, option2, option3])
+            .save()
+            .then(function(object) {
                 $("#create_button_area").hide();
                 $("#created_message").text("クイズの作成が完了しました！");
                 //スコアの更新が完了したら、メニュー画面に遷移するボタンを表示させる
                 var btn = $("<ons-button onclick='quizNavi.resetToPage(\"menu.html\")'>メニューに戻る</ons-button>");
                 btn.appendTo($("#created_message"));
-                ons.compile(btn[0]);                
-            }
-        });
+                ons.compile(btn[0]);     　              
+            })
+            .catch(function(error){
+　              $("#created_message").text("error:" + error.message);
+　          });
     }
 }
 
@@ -162,20 +160,24 @@ function answerQuiz(selectedOptions){
     } else {
         //間違い時に×を出す
         $("#question").append("<br/><img src='images/batsu.png'><br/>");
+        
+        //間違い時に端末を振動させる
+        navigator.notification.vibrate(1000);
+        
         //ログイン中の会員に連続正解数を設定
         var user = ncmb.User.getCurrentUser();
         user.set("score", score);
         score = 0;
-        user.update(function(error, obj) {
-            if(error) {
-                console.log("error:" + error.message);
-            }else {
+        user.update()
+            .then(function(obj){
                 //スコアの更新が完了したら、メニュー画面に遷移するボタンを表示させる
                 var btn = $("<ons-button onclick='quizNavi.resetToPage(\"menu.html\")'>メニューに戻る</ons-button>");
                 btn.appendTo($("#question"));
-                ons.compile(btn[0]);
-            }
-        });
+                ons.compile(btn[0]);               
+            })
+            .catch(function(error){
+                console.log("error:" + error.message);  
+            });
     }
 }
 
@@ -218,28 +220,27 @@ function selectQuiz(){
     var QuizClass = ncmb.DataStore("Quiz");
     
     //指定された条件に合致するクイズの件数を調べる
-    QuizClass.count().fetchAll(function(error, objects) {
-                             if(error) {
-                                // エラー
-                                console.log("error:" + error.message); 
-                             } else {
-                                //登録されたクイズの数を保持する
-                                quizSize = objects.count;                     
-                             }
-                        });
+    QuizClass.count().fetchAll()
+                     .then(function(objects){
+                            //登録されたクイズの数を保持する
+                            quizSize = objects.count;                          
+                     })
+                     .catch(function(error) {
+                            // エラー
+                            console.log("error:" + error.message);                          
+                     });
     
     //作成したクエリに条件を設定する
     QuizClass.skip(Math.floor(Math.random() * quizSize))
              .limit(1)
-             .fetchAll(function(error, results) {
-                 if(error) {
-                    console.log("error:" + error.message);
-                 } else {
-                    var quiz = results[0];
-                    displayQuiz(quiz);                     
-                 }
+             .fetchAll()
+             .then(function(results){
+                var quiz = results[0];
+                displayQuiz(quiz);      
+             })
+             .catch(function(error) {
+                console.log("error:" + error.message);
              });
-
 }
 
 
@@ -250,13 +251,14 @@ function findScore(){
     //会員クラスを検索するクエリを作成
     ncmb.User.order("score", true)
         .limit(5)
-        .fetchAll(function (error, results){
-            if(error) {
-                console.log("error:" + error.message);
-            } else {
+        .fetchAll()
+        .then(function(results){
                 //検索が成功した場合は会員情報のリストをdisplayRankingメソッドに渡す
-                displayRanking(results);                
-            }
+                displayRanking(results);              
+        })
+        .catch(function(error){
+                console.log("error:" + error.message);   
+                logout();
         });
 }
 
