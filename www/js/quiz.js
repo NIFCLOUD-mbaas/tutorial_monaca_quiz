@@ -257,7 +257,9 @@ function findScore(){
         })
         .catch(function(error){
                 console.log("error:" + error.message);   
-                logout();
+                if(error.status == "401") {
+                    logout();
+                }
         });
 }
 
