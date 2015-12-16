@@ -32,7 +32,7 @@ function checkCurrentUser(){
             quizNavi.pushPage("menu.html", options);
         } else {
             //未ログインの場合はログイン画面を表示
-            quizNavi.pushPage("login.html", options)
+            quizNavi.pushPage("login.html", options);
         }        
     }
     catch (error) {
@@ -85,6 +85,8 @@ function logout(){
              .catch(function(err){
                 // エラー処理
                 console.log("error:" + err.message);
+                //未ログインの場合はログイン画面を表示
+                quizNavi.pushPage("login.html", options);
              });
 }
 
@@ -160,8 +162,8 @@ function answerQuiz(selectedOptions){
         //間違い時に×を出す
         $("#question").append("<br/><img src='images/batsu.png'><br/>");
         
-        //間違い時に端末を振動させる
-        navigator.notification.vibrate(1000);
+        //間違い時に端末を振動させる(実機で試す場合、コメントアウトしてください)
+        //navigator.notification.vibrate(1000);
         
         //ログイン中の会員に連続正解数を設定
         var user = ncmb.User.getCurrentUser();
@@ -259,6 +261,8 @@ function findScore(){
                 console.log("error:" + error.message);   
                 if(error.status == "401") {
                     logout();
+                    //未ログインの場合はログイン画面を表示
+                    quizNavi.pushPage("login.html", options);
                 }
         });
 }
