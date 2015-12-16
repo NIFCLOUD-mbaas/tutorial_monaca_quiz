@@ -233,11 +233,9 @@ function selectQuiz(){
     
     //作成したクエリに条件を設定する
     QuizClass.skip(Math.floor(Math.random() * quizSize))
-             .limit(1)
-             .fetchAll()
-             .then(function(results){
-                var quiz = results[0];
-                displayQuiz(quiz);      
+             .fetch()
+             .then(function(result){
+                displayQuiz(result);      
              })
              .catch(function(error) {
                 console.log("error:" + error.message);
