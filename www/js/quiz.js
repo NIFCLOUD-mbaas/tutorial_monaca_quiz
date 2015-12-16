@@ -162,7 +162,7 @@ function answerQuiz(selectedOptions){
         //間違い時に×を出す
         $("#question").append("<br/><img src='images/batsu.png'><br/>");
         
-        //間違い時に端末を振動させる(実機で試す場合、コメントアウトしてください)
+        //間違い時に端末を振動させる(実機で試す場合、コメントアウトを外してください)
         //navigator.notification.vibrate(1000);
         
         //ログイン中の会員に連続正解数を設定
