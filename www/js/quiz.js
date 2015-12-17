@@ -1,17 +1,19 @@
 // This is a JavaScript file
-
+//mobile backendのAPIキーを設定
+var ncmb = new NCMB("YOURAPPKEY","YOURCLIENTKEY");
+    
 //ページの初期化が完了したら実行される
 $(function (){
-    console.log("init!");
-    //mobile backendのAPIキーを設定
-    NCMB.initialize("YOUR_APIKEY","YOUR_CLIENTKEY");
-    
+   
     //クイズを表示するイベントを登録
     $(document.body).on('pageinit', '#answer_page', function() {refreshQuiz();});
     
     //クイズ作成ボタンを表示するイベトを登録
     //HTMLに記述したボタンはJSで操作できない
     $(document.body).on('pageinit', '#create_quiz_page', function() {displayButton();});
+    
+    //スコアを表示するイベントを登録★
+    $(document.body).on('pageinit', '#menu_page', function() {findScore();});
     
 });
 
@@ -22,61 +24,74 @@ function checkCurrentUser(){
         animation: 'lift', // アニメーションの種類
         onTransitionEnd: function() {} // アニメーションが完了した際によばれるコールバック
     };
-    
-    if (NCMB.User.current()){
-        //ログイン済みであればメニューの表示
-        quizNavi.pushPage("menu.html", options);
-    } else {
-        //未ログインの場合はログイン画面を表示
-        quizNavi.pushPage("login.html", options)
+
+    try {
+        var currentUser = ncmb.User.getCurrentUser();
+        if (currentUser) {
+            //ログイン済みであればメニューの表示
+            quizNavi.pushPage("menu.html", options);
+        } else {
+            //未ログインの場合はログイン画面を表示
+            quizNavi.pushPage("login.html", options);
+        }        
+    }
+    catch (error) {
+        console.log("error:" + error);
+        logout();
     }
 }
 
 //会員登録・ログインを行う
-function userLogin(signUpFlag){
+function userLogin(isSignedUp){
     //入力フォームからユーザー名とパスワードを取得
     var userName = $("#user_name").val();
     var password = $("#password").val();
     
     //会員登録・ログインを実行したあとのコールバックを設定
-    var callBack = {
-        success: function (user){
-            //メニュー画面に遷移
-            quizNavi.pushPage("menu.html");
-        },
-        error: function (user, error){
+    var callBack = function(error, obj) {
+        if (error) {
             //エラーコードの表示
             $("#login_error_msg").text("errorCode:" + error.code + ", errorMessage:" + error.message);
+        } else {
+            //メニュー画面に遷移
+            quizNavi.pushPage("menu.html");
         }
-    };
-    
+    }
 
-    if (signUpFlag === false){
+    if (isSignedUp === false){
         //ログイン処理を実行し、上で設定されたコールバックが実行される
-        NCMB.User.logIn(userName, password, callBack);
+        ncmb.User.login(userName, password, callBack);
     } else {
         //会員のインスタンスを作成
-        var user = new NCMB.User();
+        var user = new ncmb.User();
         
         //ユーザー名とパスワードとスコアをインスタンスに設定
-        user.set("userName", userName);
-        user.set("password", password);
-        user.set("score", 0);
+        user.set("userName", userName)
+            .set("password", password)
+            .set("score", 0);
         
         //会員登録を実行し、上で設定されたコールバックが実行される
-        user.signUp(null, callBack);        
+        user.signUpByAccount(callBack);        
     }
 }
 
 //ログアウトを実行し、ホーム画面に遷移させる
 function logout(){
-    NCMB.User.logOut();
-    quizNavi.resetToPage("home.html");
+    ncmb.User.logout()
+             .then(function(){
+                 // ログアウト後処理
+                 quizNavi.resetToPage("home.html");
+             })
+             .catch(function(err){
+                // エラー処理
+                console.log("error:" + err.message);
+                //未ログインの場合はログイン画面を表示
+                quizNavi.pushPage("login.html", options);
+             });
 }
 
 //クイズ作成画面に登録ボタンを設置する
 function displayButton(){
-    console.log("display");
     var btn = $("<ons-button id='create_quiz_button' onclick='createQuiz()'>クイズを登録!</ons-button>");
     btn.appendTo($("#create_button_area"));
     ons.compile(btn[0]);
@@ -85,7 +100,6 @@ function displayButton(){
 
 //クイズをmobile backendに登録する
 function createQuiz(){
-    
     //フォームからクイズの内容を取得する
     var quizText = $("#quiz_text").val();
     var answer = $("#answer").val();
@@ -97,39 +111,31 @@ function createQuiz(){
     if (quizText !== "" && answer !== "" &&
         option1 !== "" && option2 !== "" && option3 !== ""){
         //クイズクラスのインスタンスを作成する
-        var QuizClass = NCMB.Object.extend("Quiz");
+        var QuizClass = ncmb.DataStore("Quiz");
         var quiz = new QuizClass();
         
-        //取得したクイズの内容をセットする
-        quiz.set("quizText", quizText);
-        quiz.set("answer", answer);
-        quiz.set("options", []);    //addする前に空配列での初期化が必要
-        quiz.add("options", option1);
-        quiz.add("options", option2);
-        quiz.add("options", option3);
-        
-        //mobile bakcendにクイズを登録する
-        quiz.save(null, {
-            success: function (quiz){
+        //取得したクイズの内容をセットし、mobile backendにクイズを登録する
+        quiz.set("quizText", quizText)
+            .set("answer", answer)
+            .set("options", [option1, option2, option3])
+            .save()
+            .then(function(object) {
                 $("#create_button_area").hide();
                 $("#created_message").text("クイズの作成が完了しました！");
                 //スコアの更新が完了したら、メニュー画面に遷移するボタンを表示させる
                 var btn = $("<ons-button onclick='quizNavi.resetToPage(\"menu.html\")'>メニューに戻る</ons-button>");
                 btn.appendTo($("#created_message"));
-                ons.compile(btn[0]);
-            },
-            error: function (quiz, error){
-                $("#created_message").text("error:" + error.message);
-            }
-        });
-        
+                ons.compile(btn[0]);     　              
+            })
+            .catch(function(error){
+　              $("#created_message").text("error:" + error.message);
+　          });
     }
 }
 
 //クイズ画面をリフレッシュする
 function refreshQuiz(){
-    $("#answer_options").html("");
-    
+    $("#answer_options").html("");    
     selectQuiz();
 }
 
@@ -156,24 +162,23 @@ function answerQuiz(selectedOptions){
         //間違い時に×を出す
         $("#question").append("<br/><img src='images/batsu.png'><br/>");
         
-        //間違い時に端末を振動させる
+        //間違い時に端末を振動させる(実機で試す場合、コメントアウトを外してください)
         //navigator.notification.vibrate(1000);
         
         //ログイン中の会員に連続正解数を設定
-        var user = NCMB.User.current();
+        var user = ncmb.User.getCurrentUser();
         user.set("score", score);
         score = 0;
-        user.save(null, {
-            success: function (){
+        user.update()
+            .then(function(obj){
                 //スコアの更新が完了したら、メニュー画面に遷移するボタンを表示させる
                 var btn = $("<ons-button onclick='quizNavi.resetToPage(\"menu.html\")'>メニューに戻る</ons-button>");
                 btn.appendTo($("#question"));
-                ons.compile(btn[0]);
-            },
-            error: function (obj, error){
-                console.log("error:" + error.message);
-            }
-        });
+                ons.compile(btn[0]);               
+            })
+            .catch(function(error){
+                console.log("error:" + error.message);  
+            });
     }
 }
 
@@ -207,4 +212,63 @@ function displayQuiz(quiz){
     
     //選択肢がタッチされたときに正誤判定を行うため、正解を保持する
     answerText = quiz.get("answer");
+}
+
+var quizSize = 0;
+//クイズを検索する
+function selectQuiz(){
+    //クイズを検索するncmb.Queryクラスのインスタンスを作成する
+    var QuizClass = ncmb.DataStore("Quiz");
+    
+    //指定された条件に合致するクイズの件数を調べる
+    QuizClass.count().fetchAll()
+                     .then(function(objects){
+                            //登録されたクイズの数を保持する
+                            quizSize = objects.count;                          
+                     })
+                     .catch(function(error) {
+                            // エラー
+                            console.log("error:" + error.message);                          
+                     });
+    
+    //作成したクエリに条件を設定する
+    QuizClass.skip(Math.floor(Math.random() * quizSize))
+             .fetch()
+             .then(function(result){
+                displayQuiz(result);      
+             })
+             .catch(function(error) {
+                console.log("error:" + error.message);
+             });
+}
+
+
+//上位5番目までのスコアを持つユーザーを取得
+function findScore(){
+    $("#ranking").html("");
+    
+    //会員クラスを検索するクエリを作成
+    ncmb.User.order("score", true)
+        .limit(5)
+        .fetchAll()
+        .then(function(results){
+                //検索が成功した場合は会員情報のリストをdisplayRankingメソッドに渡す
+                displayRanking(results);              
+        })
+        .catch(function(error){
+                console.log("error:" + error.message);   
+                if(error.status == "401") {
+                    logout();
+                    //未ログインの場合はログイン画面を表示
+                    quizNavi.pushPage("login.html", options);
+                }
+        });
+}
+
+//上位5番目までのランキングを表示
+function displayRanking(ranking){
+    for (var i = 0; i < ranking.length; i++){
+        var topUser = ranking[i];
+        $("#ranking").append((i+1) + "...userName:" + topUser.get("userName") + ", score:" + topUser.get("score") + "<br/>");
+    }
 }
