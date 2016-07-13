@@ -1,16 +1,26 @@
 {
     "plugins": [
-        "mobi.monaca.plugins.Monaca",
-        "org.apache.cordova.splashscreen"
+        "mobi.monaca.plugins.Monaca"
     ],
     "framework_version": "3.5",
-    "title-ja": "",
+    "xcode_version": null,
+    "cordova_version": "5.2",
+    "plugin_settings": [],
+    "external_plugins": [
+        "cordova-plugin-splashscreen@2.1.0",
+        "cordova-plugin-whitelist@1.0.0",
+        "cordova-plugin-vibration@1.2.0"
+    ],
+    "title-ja": "Quiz",
     "title-en": "",
     "description-ja": "",
     "description-en": "",
     "category": "User Template",
     "platform": [
-
+        "android",
+        "ios",
+        "winrt",
+        "chrome"
     ],
-    "name": "generated-1411608038-53e8b63b7e2193ab7f9dc802"
+    "name": "generated-1468393263-577f54077e2193ad75036527"
 }

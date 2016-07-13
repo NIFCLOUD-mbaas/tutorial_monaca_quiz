@@ -1,7 +1,8 @@
 // This is a JavaScript file
 //mobile backendのAPIキーを設定
 var ncmb = new NCMB("YOURAPPKEY","YOURCLIENTKEY");
-    
+
+
 //ページの初期化が完了したら実行される
 $(function (){
    
@@ -47,8 +48,8 @@ function userLogin(isSignedUp){
     var userName = $("#user_name").val();
     var password = $("#password").val();
     
-    //会員登録・ログインを実行したあとのコールバックを設定
-    var callBack = function(error, obj) {
+    //ログインを実行したあとのコールバックを設定
+    var callBack_Login = function(error, obj) {
         if (error) {
             //エラーコードの表示
             $("#login_error_msg").text("errorCode:" + error.code + ", errorMessage:" + error.message);
@@ -57,21 +58,37 @@ function userLogin(isSignedUp){
             quizNavi.pushPage("menu.html");
         }
     }
+    
+    //会員登録を実行したあとのコールバックを設定
+    var callBack_Account = function(error, obj) {
+        if (error) {
+            //エラーコードの表示
+            $("#login_error_msg").text("errorCode:" + error.code + ", errorMessage:" + error.message);
+        } else {
+            //ログインを実行
+           ncmb.User.login(userName, password, callBack_Login);
+        }
+    }
 
     if (isSignedUp === false){
         //ログイン処理を実行し、上で設定されたコールバックが実行される
-        ncmb.User.login(userName, password, callBack);
+        ncmb.User.login(userName, password, callBack_Login);
     } else {
         //会員のインスタンスを作成
         var user = new ncmb.User();
+        var acl = new ncmb.Acl();
+        //登録ユーザーに対するアクセス制御(読む、書き)
+        acl.setPublicReadAccess(true);
+        acl.setPublicWriteAccess(true);
         
         //ユーザー名とパスワードとスコアをインスタンスに設定
         user.set("userName", userName)
             .set("password", password)
-            .set("score", 0);
+            .set("score", 0)
+            .set("acl", acl);//★ACLをセットするコード
         
         //会員登録を実行し、上で設定されたコールバックが実行される
-        user.signUpByAccount(callBack);        
+        user.signUpByAccount(callBack_Account); 
     }
 }
 
@@ -90,11 +107,18 @@ function logout(){
              });
 }
 
-//クイズ作成画面に登録ボタンを設置する
+//クイズ作成画面にボタンを設置する
 function displayButton(){
+    
+    //クイズを登録
     var btn = $("<ons-button id='create_quiz_button' onclick='createQuiz()'>クイズを登録!</ons-button>");
     btn.appendTo($("#create_button_area"));
     ons.compile(btn[0]);
+    
+    //メニューに戻る
+    var btn2 = $("<ons-button onclick='quizNavi.resetToPage(\"menu.html\")'>メニューに戻る</ons-button>");
+    btn2.appendTo($("#create_button_area"));
+    ons.compile(btn2[0]);
 }
 
 
@@ -148,7 +172,7 @@ function answerQuiz(selectedOptions){
     $("#answer_options").hide();
     
     if (answerText === selectedOptions) {
-        //正解時に○を出す
+        //正解時に○画像を出す
         $("#question").append("<br/><img src='images/maru.png'><br/>" + (score+1) + "問連続正解中！");
         
         //次の問題を開くボタンを表示する
@@ -159,11 +183,12 @@ function answerQuiz(selectedOptions){
         //連続正解数を更新する
         score++;
     } else {
-        //間違い時に×を出す
+        
+        //間違い時に×画像を出す
         $("#question").append("<br/><img src='images/batsu.png'><br/>");
         
-        //間違い時に端末を振動させる(実機で試す場合、コメントアウトを外してください)
-        //navigator.notification.vibrate(1000);
+        //間違い時に端末を振動させる(振動する時間(ミリ秒単位))
+        navigator.vibrate(1000);
         
         //ログイン中の会員に連続正解数を設定
         var user = ncmb.User.getCurrentUser();
