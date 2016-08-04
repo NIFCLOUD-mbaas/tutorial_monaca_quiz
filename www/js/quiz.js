@@ -77,9 +77,8 @@ function userLogin(isSignedUp){
         //会員のインスタンスを作成
         var user = new ncmb.User();
         var acl = new ncmb.Acl();
-        //登録ユーザーに対するアクセス制御(読む、書き)
+        //登録ユーザーに対するアクセス制御(全員読み込み可)
         acl.setPublicReadAccess(true);
-        acl.setPublicWriteAccess(true);
         
         //ユーザー名とパスワードとスコアをインスタンスに設定
         user.set("userName", userName)
