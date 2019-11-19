@@ -76,16 +76,11 @@ function userLogin(isSignedUp){
     } else {
         //会員のインスタンスを作成
         var user = new ncmb.User();
-        var acl = new ncmb.Acl();
-        //登録ユーザーに対するアクセス制御(読む、書き)
-        acl.setPublicReadAccess(true);
-        acl.setPublicWriteAccess(true);
         
         //ユーザー名とパスワードとスコアをインスタンスに設定
         user.set("userName", userName)
             .set("password", password)
-            .set("score", 0)
-            .set("acl", acl);//★ACLをセットするコード
+            .set("score", 0);
         
         //会員登録を実行し、上で設定されたコールバックが実行される
         user.signUpByAccount(callBack_Account); 
