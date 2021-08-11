@@ -13,6 +13,7 @@ TestFilters([], () => {
         })
 
         it('ログイン screen', function () {
+            cy.wait(2000)
             cy.get('h1').contains('ログイン').should('have.text', 'ログイン')
         }) 
 
