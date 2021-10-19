@@ -2,8 +2,8 @@ import TestFilters from '../support/filterTests.js'
 
 TestFilters([], () => {
     describe('メニュー - Handling Action Click', function () {
-        var email = 'test@gmail.com'
-        var pass = '123456'
+        var userName = 'user_test1'
+        var password = '123456'
         var quiz_text = generate_random_string(8)
         var answer = generate_random_string(8)
         var option1 = generate_random_string(8)
@@ -17,8 +17,8 @@ TestFilters([], () => {
             cy.get('#start_button').contains('スタートする').click()
 
             // Sign in successful
-            cy.get('#user_name').type(email, { delay: 100 }).should('have.value', email)
-            cy.get('#password').type(pass, { delay: 100 }).should('have.value', pass)
+            cy.get('#user_name').type(userName, { delay: 100 }).should('have.value', userName)
+            cy.get('#password').type(password, { delay: 100 }).should('have.value', password)
             cy.get('#login_button').contains('ログイン').click()
             cy.wait(1000)
         })
